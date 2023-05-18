@@ -1,0 +1,102 @@
+---
+title: "Casos COVID 19 Costa Rica"
+author: "Wagner Chacón Ulate"
+format: 
+ html: 
+  toc: true
+editor: visual
+---
+
+## Carga del archivo de 
+
+```{r}
+#| label: dataframe 
+#| include: true
+#| echo: false
+
+covid_general <-
+  read_delim(
+    file = "https://raw.githubusercontent.com/gf0604-procesamientodatosgeograficos/2023-i/main/datos/ministerio-salud/covid/05_30_22_CSV_GENERAL.csv",
+    col_select = c(
+      "FECHA",
+      "positivos",
+      "activos",
+      "RECUPERADOS",
+      "fallecidos",
+      "nue_posi",
+      "nue_falleci",
+      "salon",
+      "UCI"
+    )
+)
+
+```
+
+```{r}
+#| label: cambio de nombre 
+#| include: true
+#| echo: false 
+
+covid_general <-
+  covid_general |>
+  rename(
+    fecha = FECHA,
+    recuperados = RECUPERADOS,
+    nuevos_positivos = nue_posi,
+    nuevos_fallecidos = nue_falleci,
+    uci = UCI
+)
+```
+
+```{r}
+#| label: formato fecha 
+#| include: true
+#| echo: false 
+
+  covid_general <-
+  covid_general |>
+  mutate(fecha = as.Date(fecha, format = "%d/%m/%Y"))
+```
+
+## Tabla de datos:
+
+```{r}
+#| label: tabla 
+#| include: true 
+#| echo: false
+
+covid_general |>
+  datatable(
+    options = list(
+      pageLength = 5,
+      language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+    )
+)
+```
+
+```{r}
+#| label: grafic 
+#| include: true
+#| echo: false 
+
+grafico_lineas_ggplot2 <-
+  covid_general |>
+  ggplot(aes(x = fecha, y = value, color = variable)) +
+  geom_line(aes(y = positivos, color = "Positivos")) +
+  geom_line(aes(y = recuperados, color = "Recuperados")) +
+  geom_line(aes(y = activos, color = "Activos")) +
+  geom_line(aes(y = fallecidos, color = "Fallecidos")) +
+  scale_color_manual( # colores
+    "",
+    values = c(
+      "Positivos" = "blue",
+      "Recuperados" = "green",
+      "Activos" = "red",
+      "Fallecidos" = "black"
+    )
+  ) +
+  ggtitle("Casos acumulados de COVID en Costa Rica al 2022-05-30") +
+  xlab("Fecha") +
+  ylab("Casos") +
+  theme_economist()  
+```
